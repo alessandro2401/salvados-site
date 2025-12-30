@@ -6,20 +6,19 @@ type TabKey = 'resumo' | 'novosNoPatio' | 'vendaAutorizada' | 'vendidoNaoRecebid
 interface TabConfig {
   key: TabKey;
   label: string;
-  icon: string;
+  color: string;
   bgColor: string;
-  textColor: string;
-  borderColor: string;
+  hoverColor: string;
 }
 
 const TABS: TabConfig[] = [
-  { key: 'resumo', label: 'Todos', icon: '📊', bgColor: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-500' },
-  { key: 'novosNoPatio', label: 'Novos', icon: '🆕', bgColor: 'bg-purple-50', textColor: 'text-purple-700', borderColor: 'border-purple-500' },
-  { key: 'vendaAutorizada', label: 'Autorizado', icon: '✅', bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-500' },
-  { key: 'vendidoNaoRecebido', label: 'Aguardando', icon: '⏳', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700', borderColor: 'border-yellow-500' },
-  { key: 'vendidoRecebido', label: 'Recebido', icon: '💰', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', borderColor: 'border-emerald-500' },
-  { key: 'ocorrencia', label: 'Ocorrências', icon: '⚠️', bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-500' },
-  { key: 'proibidaVenda', label: 'Proibido', icon: '🚫', bgColor: 'bg-gray-50', textColor: 'text-gray-700', borderColor: 'border-gray-500' },
+  { key: 'resumo', label: 'Todos', color: 'text-white', bgColor: 'bg-teal-700', hoverColor: 'hover:bg-teal-800' },
+  { key: 'novosNoPatio', label: 'Novos', color: 'text-white', bgColor: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
+  { key: 'vendaAutorizada', label: 'Autorizado', color: 'text-white', bgColor: 'bg-yellow-500', hoverColor: 'hover:bg-yellow-600' },
+  { key: 'vendidoNaoRecebido', label: 'Aguardando', color: 'text-white', bgColor: 'bg-orange-500', hoverColor: 'hover:bg-orange-600' },
+  { key: 'vendidoRecebido', label: 'Recebido', color: 'text-white', bgColor: 'bg-green-600', hoverColor: 'hover:bg-green-700' },
+  { key: 'ocorrencia', label: 'Ocorrências', color: 'text-white', bgColor: 'bg-red-600', hoverColor: 'hover:bg-red-700' },
+  { key: 'proibidaVenda', label: 'Proibido', color: 'text-white', bgColor: 'bg-gray-600', hoverColor: 'hover:bg-gray-700' },
 ];
 
 export default function VehiclesReal() {
@@ -87,20 +86,30 @@ export default function VehiclesReal() {
     return `${day}/${month}/${year}`;
   }
 
-  function getSituacaoBadgeClass(situacao: string): string {
-    if (situacao.includes('VENDIDO RECEBIDO')) return 'bg-green-100 text-green-800 border-green-300';
-    if (situacao.includes('VENDIDO')) return 'bg-blue-100 text-blue-800 border-blue-300';
-    if (situacao.includes('PROIBIDO')) return 'bg-red-100 text-red-800 border-red-300';
-    if (situacao.includes('VENDA AUTORIZADA')) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-    if (situacao.includes('NOVO')) return 'bg-purple-100 text-purple-800 border-purple-300';
-    return 'bg-gray-100 text-gray-800 border-gray-300';
+  function getStatusBadge(situacao: string) {
+    if (situacao.includes('VENDIDO RECEBIDO')) {
+      return { label: 'Vendido', className: 'bg-green-100 text-green-800' };
+    }
+    if (situacao.includes('VENDIDO')) {
+      return { label: 'Vendido', className: 'bg-blue-100 text-blue-800' };
+    }
+    if (situacao.includes('PROIBIDO')) {
+      return { label: 'Proibido', className: 'bg-red-100 text-red-800' };
+    }
+    if (situacao.includes('VENDA AUTORIZADA')) {
+      return { label: 'Autorizado', className: 'bg-yellow-100 text-yellow-800' };
+    }
+    if (situacao.includes('NOVO')) {
+      return { label: 'Novo', className: 'bg-purple-100 text-purple-800' };
+    }
+    return { label: 'Ativo', className: 'bg-gray-100 text-gray-800' };
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-700 mb-4"></div>
           <p className="text-gray-600 font-medium">Carregando veículos...</p>
         </div>
       </div>
@@ -122,60 +131,35 @@ export default function VehiclesReal() {
     );
   }
 
-  const currentTabConfig = TABS.find(t => t.key === activeTab);
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Veículos</h1>
-          <p className="text-gray-600 mt-1">Visualize e gerencie todos os veículos por categoria</p>
+      {/* Card de Status - Google Sheets */}
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900">Google Sheets Conectado</p>
+            <p className="text-sm text-gray-500">Última sincronização: {new Date().toLocaleString('pt-BR')}</p>
+          </div>
         </div>
         <button
           onClick={loadData}
           disabled={loading}
-          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md hover:shadow-lg disabled:opacity-50"
+          className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg hover:bg-yellow-200 transition border border-yellow-300 disabled:opacity-50"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Atualizar
+          Sincronizar
         </button>
       </div>
 
-      {/* Tabs de Navegação */}
-      <div className="bg-white rounded-xl shadow-md p-2">
-        <div className="flex flex-wrap gap-2">
-          {TABS.map((tab) => {
-            const count = allData?.[tab.key]?.length || 0;
-            const isActive = activeTab === tab.key;
-            
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition ${
-                  isActive
-                    ? `${tab.bgColor} ${tab.textColor} border-2 ${tab.borderColor} shadow-sm`
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
-                }`}
-              >
-                <span className="text-xl">{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  isActive ? 'bg-white bg-opacity-50' : 'bg-gray-200'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Busca */}
-      <div className="bg-white rounded-xl shadow-md p-4">
+      {/* Campo de Busca com borda tracejada */}
+      <div className="border-2 border-dashed border-orange-400 rounded-lg p-1 bg-white">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,112 +171,134 @@ export default function VehiclesReal() {
             placeholder="Buscar por placa, marca, modelo ou situação..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="block w-full pl-10 pr-3 py-3 border-0 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-700"
           />
         </div>
-        <p className="text-sm text-gray-600 mt-2">
-          Exibindo <span className="font-semibold text-gray-900">{filteredData.length}</span> de{' '}
-          <span className="font-semibold text-gray-900">{allData?.[activeTab]?.length || 0}</span> veículos
-        </p>
       </div>
 
-      {/* Tabela de Veículos */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Placa</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Veículo</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Situação</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avaliação</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor FIPE</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor Sugerido</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor Vendido</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Data Entrada</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Observação</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredData.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
-                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-lg font-medium">Nenhum veículo encontrado</p>
-                    <p className="text-sm mt-1">Tente ajustar os filtros de busca</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredData.map((veiculo, index) => (
-                  <tr key={index} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold text-gray-900">{veiculo.placa}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-gray-900">{veiculo.marca}</div>
-                      <div className="text-sm text-gray-600">{veiculo.modelo}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getSituacaoBadgeClass(veiculo.situacao)}`}>
-                        {veiculo.situacao.length > 25 ? veiculo.situacao.substring(0, 25) + '...' : veiculo.situacao}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded ${
-                        veiculo.avaliacao === 'RECUPERÁVEL' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
-                      }`}>
-                        {veiculo.avaliacao}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {formatCurrency(veiculo.fipe)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-700 font-medium">
-                      {formatCurrency(veiculo.valorSugerido)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-700 font-medium">
-                      {formatCurrency(veiculo.vlrVendido)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {formatDate(veiculo.dataEntrada)}
-                      {veiculo.dias > 0 && (
-                        <div className="text-xs text-gray-400 mt-1">{veiculo.dias} dias</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 max-w-xs">
-                      <div className="text-sm text-gray-600 truncate" title={veiculo.observacao}>
-                        {veiculo.observacao || '-'}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {/* Botões de Navegação - Pills */}
+      <div className="flex flex-wrap gap-2">
+        {TABS.map((tab) => {
+          const count = allData?.[tab.key]?.length || 0;
+          const isActive = activeTab === tab.key;
+          
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-5 py-2 rounded-full font-medium transition ${
+                isActive
+                  ? `${tab.bgColor} ${tab.color}`
+                  : `bg-gray-200 text-gray-700 hover:bg-gray-300`
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Lista de Veículos */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {TABS.find(t => t.key === activeTab)?.label || 'Veículos'}
+          </h2>
+          <span className="text-sm text-gray-600">{filteredData.length} veículos encontrados</span>
         </div>
+
+        {filteredData.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
+            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="text-lg font-medium text-gray-900">Nenhum veículo encontrado</p>
+            <p className="text-sm text-gray-600 mt-1">Tente ajustar os filtros de busca</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredData.map((veiculo, index) => {
+              const statusBadge = getStatusBadge(veiculo.situacao);
+              
+              return (
+                <div key={index} className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                    {/* Placa e Status */}
+                    <div className="lg:col-span-2">
+                      <p className="text-lg font-bold text-gray-900">{veiculo.placa}</p>
+                      <span className={`inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full ${statusBadge.className}`}>
+                        {statusBadge.label}
+                      </span>
+                    </div>
+
+                    {/* Informações do Veículo */}
+                    <div className="lg:col-span-3">
+                      <p className="font-semibold text-gray-900">{veiculo.marca}</p>
+                      <p className="text-sm text-gray-600">{veiculo.modelo}</p>
+                      <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {formatDate(veiculo.dataEntrada)}
+                      </p>
+                    </div>
+
+                    {/* Métricas Financeiras */}
+                    <div className="lg:col-span-5 grid grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-600">Valor FIPE</p>
+                        <p className="text-sm font-bold text-gray-900">{formatCurrency(veiculo.fipe)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Valor Sugerido</p>
+                        <p className="text-sm font-bold text-teal-700">{formatCurrency(veiculo.valorSugerido)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Rentabilidade</p>
+                        <p className="text-sm font-bold text-green-700">
+                          {veiculo.vlrVendido > 0 && veiculo.fipe > 0
+                            ? `${((veiculo.vlrVendido / veiculo.fipe) * 100).toFixed(1)}%`
+                            : '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Botões de Ação */}
+                    <div className="lg:col-span-2 flex gap-2 justify-end">
+                      <button className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition">
+                        Docs
+                      </button>
+                      <button className="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition">
+                        Detalhes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Rodapé com informações */}
+      {/* Rodapé com Totais */}
       {filteredData.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-sm text-gray-600">Total FIPE</p>
-              <p className="text-xl font-bold text-gray-900">
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">Total FIPE</p>
+              <p className="text-2xl font-bold text-gray-900">
                 {formatCurrency(filteredData.reduce((sum, v) => sum + v.fipe, 0))}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Sugerido</p>
-              <p className="text-xl font-bold text-blue-700">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">Total Sugerido</p>
+              <p className="text-2xl font-bold text-teal-700">
                 {formatCurrency(filteredData.reduce((sum, v) => sum + v.valorSugerido, 0))}
               </p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Vendido</p>
-              <p className="text-xl font-bold text-green-700">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-1">Total Vendido</p>
+              <p className="text-2xl font-bold text-green-700">
                 {formatCurrency(filteredData.reduce((sum, v) => sum + v.vlrVendido, 0))}
               </p>
             </div>
