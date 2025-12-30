@@ -3,7 +3,7 @@
 
 const SPREADSHEET_ID = '1M6cez9KsP0KdvkYrcwITd4eMkA10KpYUmPxIvNGCmEI';
 
-// Mapeamento dos nomes das abas para seus GIDs
+// Mapeamento dos nomes das abas
 export const SHEET_TABS = {
   RESUMO: 'Resumo',
   NOVOS_NO_PATIO: 'Novos No Pátio',
@@ -42,14 +42,17 @@ export interface VehicleData {
 
 // Função para converter valor em formato brasileiro para número
 function parseValorBR(valor: string): number {
-  if (!valor || valor === '-' || valor === 'R$' || valor === 'R$ -') return 0;
+  if (!valor || valor === '-' || valor === 'R$' || valor.trim() === '' || valor.includes('NADA')) return 0;
   
-  // Remove "R$", espaços e pontos de milhar, substitui vírgula por ponto
+  // Remove "R$", espaços, pontos de milhar e caracteres especiais
   const cleanValue = valor
     .replace(/R\$/g, '')
     .replace(/\s/g, '')
     .replace(/\./g, '')
-    .replace(',', '.');
+    .replace(',', '.')
+    .trim();
+  
+  if (cleanValue === '' || cleanValue === '-') return 0;
   
   const parsed = parseFloat(cleanValue);
   return isNaN(parsed) ? 0 : parsed;
@@ -57,7 +60,7 @@ function parseValorBR(valor: string): number {
 
 // Função para converter data em formato brasileiro para ISO
 function parseDataBR(data: string): string {
-  if (!data || data === '-') return '';
+  if (!data || data === '-' || data.trim() === '' || data === '0') return '';
   
   // Se já estiver em formato ISO
   if (data.includes('-') && data.length === 10) return data;
@@ -65,72 +68,13 @@ function parseDataBR(data: string): string {
   // Formato DD/MM/YYYY
   const parts = data.split('/');
   if (parts.length === 3) {
-    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2];
+    return `${year}-${month}-${day}`;
   }
   
   return '';
-}
-
-// Função para buscar dados de uma aba específica
-export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
-  try {
-    // URL para exportar a aba como CSV
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Erro ao buscar dados: ${response.statusText}`);
-    }
-    
-    const csvText = await response.text();
-    const lines = csvText.split('\n');
-    
-    // Pular a primeira linha (cabeçalho)
-    const dataLines = lines.slice(1).filter(line => line.trim() !== '');
-    
-    const vehicles: VehicleData[] = [];
-    
-    for (const line of dataLines) {
-      // Parse CSV (considerando campos entre aspas)
-      const fields = parseCSVLine(line);
-      
-      // Ignorar linhas vazias ou inválidas
-      if (fields.length < 10 || !fields[0] || fields[0] === 'DATA ENTRADA') continue;
-      
-      const vehicle: VehicleData = {
-        dataEntrada: parseDataBR(fields[0] || ''),
-        marca: fields[1] || '',
-        modelo: fields[2] || '',
-        placa: fields[3] || '',
-        fipe: parseValorBR(fields[4] || '0'),
-        avaliacaoLeilao: fields[5] || '',
-        situacao: fields[6] || '',
-        avaliacao: fields[7] || '',
-        percentual: parseFloat(fields[8] || '0'),
-        valorSugerido: parseValorBR(fields[9] || '0'),
-        retorno: parseFloat(fields[10] || '0'),
-        vlrVendido: parseValorBR(fields[11] || '0'),
-        retornoReal: parseFloat(fields[12] || '0'),
-        liberado: fields[13] || '',
-        atpvBaixa: fields[14] || '',
-        observacao: fields[15] || '',
-        dataAtpv: parseDataBR(fields[16] || ''),
-        dataVenda: parseDataBR(fields[17] || ''),
-        dias: parseInt(fields[18] || '0'),
-        valorPrevisto: parseValorBR(fields[19] || '0'),
-        vlRecebido: parseValorBR(fields[20] || '0'),
-        dataRecebido: parseDataBR(fields[21] || ''),
-        diasRecebimento: fields[22] ? parseInt(fields[22]) : undefined,
-      };
-      
-      vehicles.push(vehicle);
-    }
-    
-    return vehicles;
-  } catch (error) {
-    console.error(`Erro ao buscar dados da aba "${tabName}":`, error);
-    throw error;
-  }
 }
 
 // Função auxiliar para fazer parse de linha CSV considerando campos entre aspas
@@ -158,6 +102,91 @@ function parseCSVLine(line: string): string[] {
   return fields;
 }
 
+// Função para verificar se uma linha é válida (tem dados de veículo)
+function isValidVehicleLine(fields: string[]): boolean {
+  // Linha deve ter pelo menos 4 campos preenchidos (data, marca, modelo, placa)
+  if (fields.length < 4) return false;
+  
+  const dataEntrada = fields[0] || '';
+  const marca = fields[1] || '';
+  const modelo = fields[2] || '';
+  const placa = fields[3] || '';
+  
+  // Ignorar linhas vazias ou com "NADA", "SIM", "NÃO", cabeçalhos, etc.
+  if (!dataEntrada || !marca || !modelo || !placa) return false;
+  if (dataEntrada === 'DATA ENTRADA' || dataEntrada.includes('Agd')) return false;
+  if (['SIM', 'NÃO', 'NADA', 'RECUPERÁVEL', 'SUCATA', 'OUTRO'].includes(dataEntrada)) return false;
+  
+  // Verificar se tem formato de data (DD/MM/YYYY)
+  if (!dataEntrada.includes('/')) return false;
+  
+  return true;
+}
+
+// Função para buscar dados de uma aba específica
+export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
+  try {
+    // URL para exportar a aba como CSV
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar dados: ${response.statusText}`);
+    }
+    
+    const csvText = await response.text();
+    const lines = csvText.split('\n');
+    
+    // Pular as primeiras 2 linhas (totais e cabeçalho) e começar dos dados
+    const dataLines = lines.slice(2);
+    
+    const vehicles: VehicleData[] = [];
+    
+    for (const line of dataLines) {
+      if (!line.trim()) continue;
+      
+      // Parse CSV
+      const fields = parseCSVLine(line);
+      
+      // Verificar se é uma linha válida de veículo
+      if (!isValidVehicleLine(fields)) continue;
+      
+      const vehicle: VehicleData = {
+        dataEntrada: parseDataBR(fields[0] || ''),
+        marca: fields[1] || '',
+        modelo: fields[2] || '',
+        placa: fields[3] || '',
+        fipe: parseValorBR(fields[4] || '0'),
+        avaliacaoLeilao: fields[5] || '',
+        situacao: fields[6] || '',
+        avaliacao: fields[7] || '',
+        percentual: parseFloat((fields[8] || '0').replace('%', '').replace(',', '.')) / 100,
+        valorSugerido: parseValorBR(fields[9] || '0'),
+        retorno: parseFloat((fields[10] || '0').replace('%', '').replace(',', '.')) / 100,
+        vlrVendido: parseValorBR(fields[11] || '0'),
+        retornoReal: parseFloat((fields[12] || '0').replace('%', '').replace(',', '.')) / 100,
+        liberado: fields[13] || '',
+        atpvBaixa: fields[14] || '',
+        observacao: fields[15] || '',
+        dataAtpv: parseDataBR(fields[16] || ''),
+        dataVenda: parseDataBR(fields[17] || ''),
+        dias: parseInt(fields[18] || '0'),
+        valorPrevisto: parseValorBR(fields[19] || '0'),
+        vlRecebido: parseValorBR(fields[20] || '0'),
+        dataRecebido: parseDataBR(fields[21] || ''),
+        diasRecebimento: fields[22] ? parseInt(fields[22]) : undefined,
+      };
+      
+      vehicles.push(vehicle);
+    }
+    
+    return vehicles;
+  } catch (error) {
+    console.error(`Erro ao buscar dados da aba "${tabName}":`, error);
+    throw error;
+  }
+}
+
 // Função para buscar dados de todas as abas
 export async function fetchAllSheets(): Promise<{
   resumo: VehicleData[];
@@ -170,7 +199,6 @@ export async function fetchAllSheets(): Promise<{
 }> {
   try {
     const [
-      resumo,
       novosNoPatio,
       vendaAutorizada,
       vendidoNaoRecebido,
@@ -178,7 +206,6 @@ export async function fetchAllSheets(): Promise<{
       ocorrencia,
       proibidaVenda,
     ] = await Promise.all([
-      fetchSheetData(SHEET_TABS.RESUMO),
       fetchSheetData(SHEET_TABS.NOVOS_NO_PATIO),
       fetchSheetData(SHEET_TABS.VENDA_AUTORIZADA),
       fetchSheetData(SHEET_TABS.VENDIDO_NAO_RECEBIDO),
@@ -186,6 +213,16 @@ export async function fetchAllSheets(): Promise<{
       fetchSheetData(SHEET_TABS.OCORRENCIA),
       fetchSheetData(SHEET_TABS.PROIBIDA_VENDA),
     ]);
+    
+    // Consolidar todos os veículos no resumo
+    const resumo = [
+      ...novosNoPatio,
+      ...vendaAutorizada,
+      ...vendidoNaoRecebido,
+      ...vendidoRecebido,
+      ...ocorrencia,
+      ...proibidaVenda,
+    ];
     
     return {
       resumo,
