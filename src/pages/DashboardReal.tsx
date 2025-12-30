@@ -100,7 +100,7 @@ export default function DashboardReal() {
       <div className="bg-white rounded-lg border border-gray-200 p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width="12" height="12" className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -120,7 +120,7 @@ export default function DashboardReal() {
       {/* KPIs Pequenos - Grid 4 colunas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-5 relative">
-          <svg className="w-6 h-6 text-gray-400 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" className="w-6 h-6 text-gray-400 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
           </svg>
           <p className="text-5xl font-bold text-gray-900 leading-none mb-1">{metrics.totalVeiculos}</p>
@@ -128,7 +128,7 @@ export default function DashboardReal() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 relative">
-          <svg className="w-6 h-6 text-green-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" className="w-6 h-6 text-green-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p className="text-5xl font-bold text-gray-900 leading-none mb-1">{metrics.veiculosVendidos}</p>
@@ -136,7 +136,7 @@ export default function DashboardReal() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 relative">
-          <svg className="w-6 h-6 text-blue-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" className="w-6 h-6 text-blue-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <p className="text-5xl font-bold text-gray-900 leading-none mb-1">{metrics.novosNoPatio}</p>
@@ -144,7 +144,7 @@ export default function DashboardReal() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-5 relative">
-          <svg className="w-6 h-6 text-orange-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" className="w-6 h-6 text-orange-500 absolute top-4 right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <p className="text-5xl font-bold text-gray-900 leading-none mb-1">{metrics.ocorrencias}</p>
@@ -155,7 +155,7 @@ export default function DashboardReal() {
       {/* Cards Financeiros - Grid 2 colunas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 relative">
-          <svg className="w-7 h-7 text-blue-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="28" height="28" className="w-7 h-7 text-blue-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p className="text-sm text-gray-700 mb-1">Receita Total</p>
@@ -164,7 +164,7 @@ export default function DashboardReal() {
         </div>
 
         <div className="bg-green-50 border border-green-200 rounded-xl p-6 relative">
-          <svg className="w-7 h-7 text-green-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="28" height="28" className="w-7 h-7 text-green-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
           <p className="text-sm text-gray-700 mb-1">Valor Recebido</p>
@@ -184,7 +184,7 @@ export default function DashboardReal() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 relative">
-            <svg className="w-7 h-7 text-blue-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width="28" height="28" className="w-7 h-7 text-blue-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-gray-700 mb-1">Total FIPE 2025</p>
@@ -193,7 +193,7 @@ export default function DashboardReal() {
           </div>
 
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 relative">
-            <svg className="w-7 h-7 text-green-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width="28" height="28" className="w-7 h-7 text-green-700 absolute top-5 right-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
             <p className="text-sm text-gray-700 mb-1">Total Sugerido 2025</p>
@@ -210,7 +210,7 @@ export default function DashboardReal() {
           placeholder="Buscar por placa, marca ou modelo..."
           className="w-full px-4 py-3 pl-10 border-2 border-dashed border-orange-400 rounded-lg focus:outline-none focus:border-orange-500 text-sm"
         />
-        <svg className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width="20" height="20" className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
@@ -244,7 +244,7 @@ export default function DashboardReal() {
                   <p className="text-base font-semibold text-gray-900">{veiculo.marca} {veiculo.modelo}</p>
                   <p className="text-sm text-gray-500">Avaliação: {veiculo.avaliacao || '-'}</p>
                   <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg width="16" height="16" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     {formatDate(veiculo.dataEntrada)}
