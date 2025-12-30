@@ -1,0 +1,29 @@
+# Resumo da Análise da Planilha de Leilão
+
+## Valor Total Esperado de Retorno
+
+O valor total esperado de retorno do leilão, aplicando as regras de 25% para Sucata e 40% para Recuperável, é de:
+
+**R$ 203,814.15**
+
+## Detalhamento por Tipo de Veículo
+
+| TIPO        |   QUANTIDADE | VALOR_TOTAL_ESPERADO   |
+|:------------|-------------:|:-----------------------|
+| Recuperavel |            9 | R$ 149,006.40          |
+| Sucata      |            3 | R$ 54,807.75           |
+
+## Detalhamento dos Veículos (Primeiras 10 linhas)
+
+|   UNNAMED__0 |   UNNAMED__1 | UNNAMED__2                                   |   UNNAMED__3 | UNNAMED__4   | UNNAMED__5   | UNNAMED__6        |   UNNAMED__7 |   FIPE_R$ |   M_NIMO_R$ |   MOLICAR_R$ |   REMO__O_R$ |   N__LEIL_ES |   MAX__R$_ALCAN_ADO |   _%__AVARIAS |   OBSERVA__O |   VL__R$_ALCAN_ADO |   SUGERIDO |   FIPE | SITUA__O    | SUCATA_OU_RECUPERAVEL   |   OBJETIVO_DA__%__FIPE |   _%__FIPE |   _%__MOLICAR |   VALOR_ESPERADO_RETORNO |
+|-------------:|-------------:|:---------------------------------------------|-------------:|:-------------|:-------------|:------------------|-------------:|----------:|------------:|-------------:|-------------:|-------------:|--------------------:|--------------:|-------------:|-------------------:|-----------:|-------:|:------------|:------------------------|-----------------------:|-----------:|--------------:|-------------------------:|
+|          147 |          nan | UNO Uno Vivace 1.0 Evo                       |         2014 | OMO0C22      | COLISÃO      | 9BD195102E0582636 |          nan |         0 |           0 |            0 |            0 |            4 |                8250 |             0 |          nan |               4400 |     7898   |  31592 | Condicional | Sucata                  |                   0.25 |  0.139276  |       -3498   |                   7898   |
+|          148 |          nan | L200 TRITON L200 Triton HPE 3.2 Turbo        |         2010 | NTK9J74      | COLISÃO      | 93XJRKB8TACA22196 |          nan |         0 |           0 |            0 |            0 |            1 |               10200 |             0 |          nan |              10200 |    21923   |  87694 | Condicional | Sucata                  |                   0.25 |  0.116314  |      -11723   |                  21923.5 |
+|          149 |          nan | HR-V HR-V EXL 1.8 16V i-VTEC                 |         2015 | QDL7G25      | COLISÃO      | 93HRV2870GZ119003 |          nan |         0 |           0 |            0 |            0 |            1 |               39000 |             0 |          nan |              39000 |    33912   |  84780 | Condicional | Recuperavel             |                   0.4  |  0.460014  |        5088   |                  33912   |
+|          150 |          nan | C3 AIRCROSS C3 AirCross Tendance 1.6 16V VVT |         2012 | NBW7I76      | COLISÃO      | 935SUNFNWDB500280 |          nan |         0 |           0 |            0 |            0 |            1 |                5500 |             0 |          nan |               5500 |    15748.4 |  39371 | Condicional | Recuperavel             |                   0.4  |  0.139697  |      -10248.4 |                  15748.4 |
+|          151 |          nan | CLIO Clio Autentique 1.0 16V Hi-Power        |         2016 | PAQ0D12      | COLISÃO      | 8A1BB8215GL387100 |          nan |         0 |           0 |            0 |            0 |            1 |                3050 |             0 |          nan |               3050 |    14052.4 |  35131 | Condicional | Recuperavel             |                   0.4  |  0.0868179 |      -11002.4 |                  14052.4 |
+|          152 |          nan | C3 C3 Tendance 1.6 16V VVT                   |         2015 | PQD6I03      | COLISÃO      | 935SLNFN2FB534236 |          nan |         0 |           0 |            0 |            0 |            1 |                6100 |             0 |          nan |               6100 |    16454.8 |  41137 | Condicional | Recuperavel             |                   0.4  |  0.148285  |      -10354.8 |                  16454.8 |
+|          153 |          nan | COROLLA Corolla XEi 2.0 16V Dual VVT-i       |         2017 | PQH1B90      | COLISÃO      | 9BRBD3HE7J0379863 |          nan |         0 |           0 |            0 |            0 |            1 |               10450 |             0 |          nan |              10450 |    24986.2 |  99945 | Condicional | Sucata                  |                   0.25 |  0.104558  |      -14536.2 |                  24986.2 |
+|          154 |          nan | PALIO Palio Fire Economy 1.0                 |         2011 | NWD7A83      | COLISÃO      | 9BD17164LB5734165 |          nan |         0 |           0 |            0 |            0 |            1 |                6500 |             0 |          nan |               6500 |     9077.6 |  22694 | Condicional | Recuperavel             |                   0.4  |  0.286419  |       -2577.6 |                   9077.6 |
+|          155 |          nan | PALIO Palio Attractive 1.4 Evo               |         2012 | OKU5861      | COLISÃO      | 9BD196272D2109286 |          nan |         0 |           0 |            0 |            0 |            1 |               11150 |             0 |          nan |              11150 |    14476   |  36190 | Condicional | Recuperavel             |                   0.4  |  0.308096  |       -3326   |                  14476   |
+|          156 |          nan | J3 J3 1.4 1.4 16V VVT                        |         2011 | JHG3430      | COLISÃO      | LJ12EKR1XC4390521 |          nan |         0 |           0 |            0 |            0 |            1 |                4350 |             0 |          nan |               4350 |     9097.6 |  22744 | Condicional | Recuperavel             |                   0.4  |  0.191259  |       -4747.6 |                   9097.6 |
