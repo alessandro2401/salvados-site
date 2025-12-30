@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import DashboardPage from './pages/Dashboard';
+import VehiclesPage from './pages/Vehicles';
 import './index.css';
 
 function App() {
@@ -40,8 +42,8 @@ function App() {
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/veiculos" element={<Veiculos />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/veiculos" element={<VehiclesPage />} />
             <Route path="/importar" element={<Importar />} />
             <Route path="/relatorios" element={<Relatorios />} />
           </Routes>
