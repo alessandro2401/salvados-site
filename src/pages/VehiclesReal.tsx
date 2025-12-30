@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchAllSheets, VehicleData, SHEET_TABS } from '../services/googleSheets';
+import { fetchAllSheets, VehicleData } from '../services/googleSheets';
 
 type TabKey = 'resumo' | 'novosNoPatio' | 'vendaAutorizada' | 'vendidoNaoRecebido' | 'vendidoRecebido' | 'ocorrencia' | 'proibidaVenda';
 
@@ -7,17 +7,19 @@ interface TabConfig {
   key: TabKey;
   label: string;
   icon: string;
-  color: string;
+  bgColor: string;
+  textColor: string;
+  borderColor: string;
 }
 
 const TABS: TabConfig[] = [
-  { key: 'resumo', label: 'Resumo Geral', icon: '📊', color: 'blue' },
-  { key: 'novosNoPatio', label: 'Novos no Pátio', icon: '🆕', color: 'purple' },
-  { key: 'vendaAutorizada', label: 'Venda Autorizada', icon: '✅', color: 'green' },
-  { key: 'vendidoNaoRecebido', label: 'Vendido (Aguardando)', icon: '⏳', color: 'yellow' },
-  { key: 'vendidoRecebido', label: 'Vendido e Recebido', icon: '💰', color: 'green' },
-  { key: 'ocorrencia', label: 'Ocorrências', icon: '⚠️', color: 'red' },
-  { key: 'proibidaVenda', label: 'Proibido a Venda', icon: '🚫', color: 'gray' },
+  { key: 'resumo', label: 'Todos', icon: '📊', bgColor: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-500' },
+  { key: 'novosNoPatio', label: 'Novos', icon: '🆕', bgColor: 'bg-purple-50', textColor: 'text-purple-700', borderColor: 'border-purple-500' },
+  { key: 'vendaAutorizada', label: 'Autorizado', icon: '✅', bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-500' },
+  { key: 'vendidoNaoRecebido', label: 'Aguardando', icon: '⏳', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700', borderColor: 'border-yellow-500' },
+  { key: 'vendidoRecebido', label: 'Recebido', icon: '💰', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', borderColor: 'border-emerald-500' },
+  { key: 'ocorrencia', label: 'Ocorrências', icon: '⚠️', bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-500' },
+  { key: 'proibidaVenda', label: 'Proibido', icon: '🚫', bgColor: 'bg-gray-50', textColor: 'text-gray-700', borderColor: 'border-gray-500' },
 ];
 
 export default function VehiclesReal() {
@@ -72,6 +74,7 @@ export default function VehiclesReal() {
   }
 
   function formatCurrency(value: number): string {
+    if (!value) return '-';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -80,16 +83,25 @@ export default function VehiclesReal() {
 
   function formatDate(dateStr: string): string {
     if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR');
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  function getSituacaoBadgeClass(situacao: string): string {
+    if (situacao.includes('VENDIDO RECEBIDO')) return 'bg-green-100 text-green-800 border-green-300';
+    if (situacao.includes('VENDIDO')) return 'bg-blue-100 text-blue-800 border-blue-300';
+    if (situacao.includes('PROIBIDO')) return 'bg-red-100 text-red-800 border-red-300';
+    if (situacao.includes('VENDA AUTORIZADA')) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    if (situacao.includes('NOVO')) return 'bg-purple-100 text-purple-800 border-purple-300';
+    return 'bg-gray-100 text-gray-800 border-gray-300';
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando veículos...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600 font-medium">Carregando veículos...</p>
         </div>
       </div>
     );
@@ -97,155 +109,162 @@ export default function VehiclesReal() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <h3 className="text-red-800 font-semibold mb-2">Erro ao Carregar Dados</h3>
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={loadData}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-          >
-            Tentar Novamente
-          </button>
-        </div>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center max-w-md mx-auto mt-8">
+        <h3 className="text-red-800 font-semibold mb-2">Erro ao Carregar Dados</h3>
+        <p className="text-red-600 mb-4">{error}</p>
+        <button
+          onClick={loadData}
+          className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+        >
+          Tentar Novamente
+        </button>
       </div>
     );
   }
 
+  const currentTabConfig = TABS.find(t => t.key === activeTab);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Veículos</h1>
-        <p className="text-gray-600 mt-1">Visualize e gerencie todos os veículos salvados por categoria</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestão de Veículos</h1>
+          <p className="text-gray-600 mt-1">Visualize e gerencie todos os veículos por categoria</p>
+        </div>
         <button
           onClick={loadData}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+          disabled={loading}
+          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md hover:shadow-lg disabled:opacity-50"
         >
-          🔄 Atualizar Dados
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Atualizar
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <nav className="flex space-x-2 px-4" aria-label="Tabs">
-            {TABS.map((tab) => {
-              const count = allData?.[tab.key]?.length || 0;
-              const isActive = activeTab === tab.key;
-              
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`
-                    flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap
-                    ${isActive
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }
-                  `}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                  <span className={`
-                    px-2 py-0.5 text-xs font-semibold rounded-full
-                    ${isActive ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}
-                  `}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </nav>
+      {/* Tabs de Navegação */}
+      <div className="bg-white rounded-xl shadow-md p-2">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((tab) => {
+            const count = allData?.[tab.key]?.length || 0;
+            const isActive = activeTab === tab.key;
+            
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition ${
+                  isActive
+                    ? `${tab.bgColor} ${tab.textColor} border-2 ${tab.borderColor} shadow-sm`
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
+                }`}
+              >
+                <span className="text-xl">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                  isActive ? 'bg-white bg-opacity-50' : 'bg-gray-200'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div className="p-4 border-b border-gray-200">
+      {/* Busca */}
+      <div className="bg-white rounded-xl shadow-md p-4">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
           <input
             type="text"
             placeholder="Buscar por placa, marca, modelo ou situação..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
+        <p className="text-sm text-gray-600 mt-2">
+          Exibindo <span className="font-semibold text-gray-900">{filteredData.length}</span> de{' '}
+          <span className="font-semibold text-gray-900">{allData?.[activeTab]?.length || 0}</span> veículos
+        </p>
+      </div>
 
-        {/* Results Count */}
-        <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600">
-          Exibindo {filteredData.length} de {allData?.[activeTab]?.length || 0} veículos
-        </div>
-
-        {/* Vehicles Table */}
+      {/* Tabela de Veículos */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Veículo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Situação</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avaliação</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor FIPE</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor Sugerido</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Vlr Vendido</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Vlr Recebido</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Entrada</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dias</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observação</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Placa</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Veículo</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Situação</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avaliação</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor FIPE</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor Sugerido</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor Vendido</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Data Entrada</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Observação</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
-                    Nenhum veículo encontrado
+                  <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-lg font-medium">Nenhum veículo encontrado</p>
+                    <p className="text-sm mt-1">Tente ajustar os filtros de busca</p>
                   </td>
                 </tr>
               ) : (
                 filteredData.map((veiculo, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {veiculo.placa}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="font-medium">{veiculo.marca}</div>
-                      <div className="text-gray-500">{veiculo.modelo}</div>
-                    </td>
+                  <tr key={index} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        veiculo.situacao.includes('VENDIDO RECEBIDO') ? 'bg-green-100 text-green-800' :
-                        veiculo.situacao.includes('VENDIDO') ? 'bg-yellow-100 text-yellow-800' :
-                        veiculo.situacao.includes('VENDA AUTORIZADA') ? 'bg-blue-100 text-blue-800' :
-                        veiculo.situacao.includes('NOVO') ? 'bg-purple-100 text-purple-800' :
-                        veiculo.situacao.includes('PROIBIDO') ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {veiculo.situacao}
+                      <span className="text-sm font-bold text-gray-900">{veiculo.placa}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-semibold text-gray-900">{veiculo.marca}</div>
+                      <div className="text-sm text-gray-600">{veiculo.modelo}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getSituacaoBadgeClass(veiculo.situacao)}`}>
+                        {veiculo.situacao.length > 25 ? veiculo.situacao.substring(0, 25) + '...' : veiculo.situacao}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {veiculo.avaliacao}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded ${
+                        veiculo.avaliacao === 'RECUPERÁVEL' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
+                      }`}>
+                        {veiculo.avaliacao}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                       {formatCurrency(veiculo.fipe)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-700 font-medium">
                       {formatCurrency(veiculo.valorSugerido)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                      {veiculo.vlrVendido > 0 ? formatCurrency(veiculo.vlrVendido) : '-'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-700 font-medium">
+                      {formatCurrency(veiculo.vlrVendido)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium">
-                      {veiculo.vlRecebido > 0 ? formatCurrency(veiculo.vlRecebido) : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(veiculo.dataEntrada)}
+                      {veiculo.dias > 0 && (
+                        <div className="text-xs text-gray-400 mt-1">{veiculo.dias} dias</div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                      {veiculo.dias > 0 ? `${veiculo.dias}d` : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={veiculo.observacao}>
-                      {veiculo.observacao || '-'}
+                    <td className="px-6 py-4 max-w-xs">
+                      <div className="text-sm text-gray-600 truncate" title={veiculo.observacao}>
+                        {veiculo.observacao || '-'}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -254,6 +273,32 @@ export default function VehiclesReal() {
           </table>
         </div>
       </div>
+
+      {/* Rodapé com informações */}
+      {filteredData.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-sm text-gray-600">Total FIPE</p>
+              <p className="text-xl font-bold text-gray-900">
+                {formatCurrency(filteredData.reduce((sum, v) => sum + v.fipe, 0))}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Sugerido</p>
+              <p className="text-xl font-bold text-blue-700">
+                {formatCurrency(filteredData.reduce((sum, v) => sum + v.valorSugerido, 0))}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Vendido</p>
+              <p className="text-xl font-bold text-green-700">
+                {formatCurrency(filteredData.reduce((sum, v) => sum + v.vlrVendido, 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
