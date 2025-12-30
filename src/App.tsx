@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import DashboardPage from './pages/Dashboard';
-import VehiclesPage from './pages/Vehicles';
+import DashboardPage from './pages/DashboardReal';
+import VehiclesPage from './pages/VehiclesReal';
 import './index.css';
 
 function App() {
