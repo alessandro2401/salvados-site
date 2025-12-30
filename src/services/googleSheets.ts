@@ -14,6 +14,22 @@ export const SHEET_TABS = {
   PROIBIDA_VENDA: '10 Proibia a Venda',
 };
 
+// Interface simplificada para uso nos componentes
+export interface Vehicle {
+  dataEntrada: string;
+  marca: string;
+  modelo: string;
+  placa: string;
+  valorFipe: number;
+  avaliacao: string;
+  situacao: string;
+  valorSugerido: number;
+  valorVendido: number;
+  valorRecebido: number;
+  dias: number;
+  aba: string;
+}
+
 export interface VehicleData {
   dataEntrada: string;
   marca: string;
@@ -38,6 +54,24 @@ export interface VehicleData {
   vlRecebido: number;
   dataRecebido: string;
   diasRecebimento?: number;
+}
+
+// Função para converter VehicleData para Vehicle
+function convertToVehicle(data: VehicleData, aba: string): Vehicle {
+  return {
+    dataEntrada: data.dataEntrada,
+    marca: data.marca,
+    modelo: data.modelo,
+    placa: data.placa,
+    valorFipe: data.fipe,
+    avaliacao: data.avaliacao,
+    situacao: data.situacao,
+    valorSugerido: data.valorSugerido,
+    valorVendido: data.vlrVendido,
+    valorRecebido: data.vlRecebido,
+    dias: data.dias,
+    aba: aba,
+  };
 }
 
 // Função para converter valor em formato brasileiro para número
@@ -187,16 +221,8 @@ export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
   }
 }
 
-// Função para buscar dados de todas as abas
-export async function fetchAllSheets(): Promise<{
-  resumo: VehicleData[];
-  novosNoPatio: VehicleData[];
-  vendaAutorizada: VehicleData[];
-  vendidoNaoRecebido: VehicleData[];
-  vendidoRecebido: VehicleData[];
-  ocorrencia: VehicleData[];
-  proibidaVenda: VehicleData[];
-}> {
+// Função para buscar dados de todas as abas e retornar como Vehicle[]
+export async function fetchAllSheets(): Promise<Vehicle[]> {
   try {
     const [
       novosNoPatio,
@@ -214,25 +240,17 @@ export async function fetchAllSheets(): Promise<{
       fetchSheetData(SHEET_TABS.PROIBIDA_VENDA),
     ]);
     
-    // Consolidar todos os veículos no resumo
-    const resumo = [
-      ...novosNoPatio,
-      ...vendaAutorizada,
-      ...vendidoNaoRecebido,
-      ...vendidoRecebido,
-      ...ocorrencia,
-      ...proibidaVenda,
+    // Consolidar todos os veículos
+    const allVehicles: Vehicle[] = [
+      ...novosNoPatio.map(v => convertToVehicle(v, 'Novos No Pátio')),
+      ...vendaAutorizada.map(v => convertToVehicle(v, 'Venda Autorizada')),
+      ...vendidoNaoRecebido.map(v => convertToVehicle(v, 'Vendido e Não Recebido')),
+      ...vendidoRecebido.map(v => convertToVehicle(v, 'Vendido e Recebido')),
+      ...ocorrencia.map(v => convertToVehicle(v, 'Ocorrências')),
+      ...proibidaVenda.map(v => convertToVehicle(v, 'Proibida a Venda')),
     ];
     
-    return {
-      resumo,
-      novosNoPatio,
-      vendaAutorizada,
-      vendidoNaoRecebido,
-      vendidoRecebido,
-      ocorrencia,
-      proibidaVenda,
-    };
+    return allVehicles;
   } catch (error) {
     console.error('Erro ao buscar todas as abas:', error);
     throw error;
@@ -240,46 +258,43 @@ export async function fetchAllSheets(): Promise<{
 }
 
 // Função para calcular métricas do dashboard
-export function calculateDashboardMetrics(allData: {
-  resumo: VehicleData[];
-  novosNoPatio: VehicleData[];
-  vendaAutorizada: VehicleData[];
-  vendidoNaoRecebido: VehicleData[];
-  vendidoRecebido: VehicleData[];
-  ocorrencia: VehicleData[];
-  proibidaVenda: VehicleData[];
-}) {
-  const totalVeiculos = allData.resumo.length;
+export function calculateMetrics(vehicles: Vehicle[]) {
+  const totalVeiculos = vehicles.length;
   
-  const valorTotalFipe = allData.resumo.reduce((sum, v) => sum + v.fipe, 0);
-  const valorTotalSugerido = allData.resumo.reduce((sum, v) => sum + v.valorSugerido, 0);
-  const valorTotalVendido = allData.resumo.reduce((sum, v) => sum + v.vlrVendido, 0);
-  const valorTotalRecebido = allData.resumo.reduce((sum, v) => sum + v.vlRecebido, 0);
+  const veiculosVendidos = vehicles.filter(v => 
+    v.situacao.includes('VENDIDO') || v.aba.includes('Vendido')
+  ).length;
   
-  const veiculosVendidos = allData.vendidoNaoRecebido.length + allData.vendidoRecebido.length;
-  const taxaRecuperacao = valorTotalFipe > 0 ? (valorTotalVendido / valorTotalFipe) * 100 : 0;
+  const novosNoPatio = vehicles.filter(v => 
+    v.aba === 'Novos No Pátio'
+  ).length;
   
-  const diasNoPatioArray = allData.resumo
-    .filter(v => v.dias > 0)
-    .map(v => v.dias);
-  const tempoMedio = diasNoPatioArray.length > 0
-    ? Math.round(diasNoPatioArray.reduce((sum, d) => sum + d, 0) / diasNoPatioArray.length)
+  const ocorrencias = vehicles.filter(v => 
+    v.aba === 'Ocorrências'
+  ).length;
+  
+  const totalFipe = vehicles.reduce((sum, v) => sum + (v.valorFipe || 0), 0);
+  const totalSugerido = vehicles.reduce((sum, v) => sum + (v.valorSugerido || 0), 0);
+  const totalVendido = vehicles.reduce((sum, v) => sum + (v.valorVendido || 0), 0);
+  const totalRecebido = vehicles.reduce((sum, v) => sum + (v.valorRecebido || 0), 0);
+  
+  const taxaRecuperacao = totalFipe > 0 ? (totalVendido / totalFipe) * 100 : 0;
+  
+  const diasArray = vehicles.filter(v => v.dias > 0).map(v => v.dias);
+  const tempoMedio = diasArray.length > 0
+    ? Math.round(diasArray.reduce((sum, d) => sum + d, 0) / diasArray.length)
     : 0;
   
   return {
     totalVeiculos,
-    valorTotalFipe,
-    valorTotalSugerido,
-    valorTotalVendido,
-    valorTotalRecebido,
     veiculosVendidos,
+    novosNoPatio,
+    ocorrencias,
+    totalFipe,
+    totalSugerido,
+    totalVendido,
+    totalRecebido,
     taxaRecuperacao,
     tempoMedio,
-    novosNoPatio: allData.novosNoPatio.length,
-    vendaAutorizada: allData.vendaAutorizada.length,
-    vendidoNaoRecebido: allData.vendidoNaoRecebido.length,
-    vendidoRecebido: allData.vendidoRecebido.length,
-    ocorrencias: allData.ocorrencia.length,
-    proibidaVenda: allData.proibidaVenda.length,
   };
 }
