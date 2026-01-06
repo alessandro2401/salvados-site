@@ -1,240 +1,268 @@
-import { useState } from 'react';
-import { Search, Filter, Eye } from 'lucide-react';
-import { mockVehicles, formatCurrency, type Vehicle } from '../data/mockVehicles';
+import { useEffect, useState } from 'react';
+import { fetchAllSheets, type Vehicle } from '../services/googleSheets';
 
 export default function Vehicles() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterTipo, setFilterTipo] = useState<'all' | 'Sucata' | 'Recuperável'>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterAba, setFilterAba] = useState('Todos');
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchAllSheets();
+      setVehicles(data);
+    } catch (err) {
+      setError('Erro ao carregar dados do Google Sheets');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   // Filtrar veículos
-  const filteredVehicles = mockVehicles.filter(vehicle => {
+  const filteredVehicles = vehicles.filter(vehicle => {
     const matchesSearch = 
       vehicle.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vehicle.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.modelo.toLowerCase().includes(searchTerm.toLowerCase());
+      vehicle.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.situacao.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesTipo = filterTipo === 'all' || vehicle.tipo === filterTipo;
-    const matchesStatus = filterStatus === 'all' || vehicle.status === filterStatus;
-
-    return matchesSearch && matchesTipo && matchesStatus;
+    const matchesAba = filterAba === 'Todos' || vehicle.aba === filterAba;
+    
+    return matchesSearch && matchesAba;
   });
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Veículos</h1>
-        <p className="text-gray-600 mt-1">Visualize e gerencie todos os veículos salvados</p>
-      </div>
-
-      {/* Filtros e Busca */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Busca */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Buscar
-            </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Placa, marca ou modelo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Filtro por Tipo */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo
-            </label>
-            <select
-              value={filterTipo}
-              onChange={(e) => setFilterTipo(e.target.value as any)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Todos</option>
-              <option value="Recuperável">Recuperável</option>
-              <option value="Sucata">Sucata</option>
-            </select>
-          </div>
-
-          {/* Filtro por Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Todos</option>
-              <option value="Novo no Pátio">Novo no Pátio</option>
-              <option value="Em Avaliação">Em Avaliação</option>
-              <option value="Aguardando Leilão">Aguardando Leilão</option>
-              <option value="Leiloado">Leiloado</option>
-              <option value="Vendido">Vendido</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Contador de Resultados */}
-        <div className="mt-4 flex items-center text-sm text-gray-600">
-          <Filter className="w-4 h-4 mr-2" />
-          Exibindo {filteredVehicles.length} de {mockVehicles.length} veículos
-        </div>
-      </div>
-
-      {/* Lista de Veículos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredVehicles.map((vehicle) => (
-          <VehicleCard key={vehicle.id} vehicle={vehicle} />
-        ))}
-      </div>
-
-      {/* Mensagem quando não há resultados */}
-      {filteredVehicles.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">Nenhum veículo encontrado com os filtros aplicados.</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Componente Card de Veículo
-function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      {/* Header do Card */}
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">
-            {vehicle.marca} {vehicle.modelo}
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {vehicle.ano} • {vehicle.placa}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            vehicle.tipo === 'Recuperável' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-orange-100 text-orange-800'
-          }`}>
-            {vehicle.tipo}
-          </span>
-        </div>
-      </div>
-
-      {/* Status */}
-      <div className="mb-4">
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-          getStatusColor(vehicle.status)
-        }`}>
-          {vehicle.status}
-        </span>
-      </div>
-
-      {/* Informações Financeiras */}
-      <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
-        <div>
-          <p className="text-xs text-gray-600 mb-1">Valor FIPE</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {formatCurrency(vehicle.valorFipe)}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-600 mb-1">Valor Sugerido</p>
-          <p className="text-lg font-semibold text-blue-600">
-            {formatCurrency(vehicle.valorSugerido)}
-          </p>
-        </div>
-        {vehicle.valorVenda && (
-          <>
-            <div>
-              <p className="text-xs text-gray-600 mb-1">Valor de Venda</p>
-              <p className="text-lg font-semibold text-green-600">
-                {formatCurrency(vehicle.valorVenda)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 mb-1">Diferença</p>
-              <p className={`text-lg font-semibold ${
-                vehicle.valorVenda > vehicle.valorSugerido ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {formatCurrency(vehicle.valorVenda - vehicle.valorSugerido)}
-              </p>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Informações Adicionais */}
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-600">Data de Entrada:</span>
-          <span className="font-medium text-gray-900">
-            {new Date(vehicle.dataEntrada).toLocaleDateString('pt-BR')}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Dias no Pátio:</span>
-          <span className="font-medium text-gray-900">{vehicle.diasPatio} dias</span>
-        </div>
-        {vehicle.dataVenda && (
-          <div className="flex justify-between">
-            <span className="text-gray-600">Data de Venda:</span>
-            <span className="font-medium text-gray-900">
-              {new Date(vehicle.dataVenda).toLocaleDateString('pt-BR')}
-            </span>
-          </div>
-        )}
-        {vehicle.comprador && (
-          <div className="flex justify-between">
-            <span className="text-gray-600">Comprador:</span>
-            <span className="font-medium text-gray-900">{vehicle.comprador}</span>
-          </div>
-        )}
-        {vehicle.leiloeiro && (
-          <div className="flex justify-between">
-            <span className="text-gray-600">Leiloeiro:</span>
-            <span className="font-medium text-gray-900">{vehicle.leiloeiro}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Observações */}
-      {vehicle.observacoes && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-600 mb-1">Observações:</p>
-          <p className="text-sm text-gray-700">{vehicle.observacoes}</p>
-        </div>
-      )}
-
-      {/* Botão Ver Detalhes */}
-      <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-        <Eye className="w-4 h-4" />
-        Ver Detalhes
-      </button>
-    </div>
-  );
-}
-
-// Função auxiliar para cores de status
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    'Novo no Pátio': 'bg-blue-100 text-blue-800',
-    'Em Avaliação': 'bg-yellow-100 text-yellow-800',
-    'Aguardando Leilão': 'bg-orange-100 text-orange-800',
-    'Leiloado': 'bg-purple-100 text-purple-800',
-    'Vendido': 'bg-green-100 text-green-800'
+  // Contar veículos por aba
+  const abaCounts = {
+    'Todos': vehicles.length,
+    'Novos No Pátio': vehicles.filter(v => v.aba === 'Novos No Pátio').length,
+    'Venda Autorizada': vehicles.filter(v => v.aba === 'Venda Autorizada').length,
+    'Vendido e Não Recebido': vehicles.filter(v => v.aba === 'Vendido e Não Recebido').length,
+    'Vendido e Recebido': vehicles.filter(v => v.aba === 'Vendido e Recebido').length,
+    'Ocorrências': vehicles.filter(v => v.aba === 'Ocorrências').length,
+    'Proibida a Venda': vehicles.filter(v => v.aba === 'Proibida a Venda').length,
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+
+  // Estilos
+  const containerStyle: React.CSSProperties = {
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '2rem',
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '0.75rem',
+    padding: '1.5rem',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    marginBottom: '1.5rem',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: '1rem',
+  };
+
+  const searchInputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '0.5rem',
+    fontSize: '0.875rem',
+    marginBottom: '1.5rem',
+  };
+
+  const tabsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '0.5rem',
+    marginBottom: '1.5rem',
+    flexWrap: 'wrap',
+  };
+
+  const getTabStyle = (isActive: boolean): React.CSSProperties => ({
+    padding: '0.5rem 1rem',
+    borderRadius: '0.5rem',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    background: isActive ? '#3b82f6' : '#f3f4f6',
+    color: isActive ? 'white' : '#6b7280',
+    transition: 'all 0.2s',
+  });
+
+  const tableStyle: React.CSSProperties = {
+    width: '100%',
+    borderCollapse: 'collapse',
+  };
+
+  const thStyle: React.CSSProperties = {
+    textAlign: 'left',
+    padding: '0.75rem',
+    borderBottom: '2px solid #e5e7eb',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: '#374151',
+  };
+
+  const tdStyle: React.CSSProperties = {
+    padding: '0.75rem',
+    borderBottom: '1px solid #e5e7eb',
+    fontSize: '0.875rem',
+    color: '#6b7280',
+  };
+
+  const badgeStyle = (color: string): React.CSSProperties => ({
+    display: 'inline-block',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '9999px',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    background: color === 'green' ? '#d1fae5' : color === 'red' ? '#fee2e2' : color === 'yellow' ? '#fef3c7' : '#dbeafe',
+    color: color === 'green' ? '#065f46' : color === 'red' ? '#991b1b' : color === 'yellow' ? '#92400e' : '#1e40af',
+  });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  if (loading) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem' }}>
+          <p style={{ fontSize: '1.125rem', color: '#6b7280' }}>Carregando veículos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem' }}>
+          <p style={{ fontSize: '1.125rem', color: '#dc2626' }}>{error}</p>
+          <button 
+            onClick={loadData} 
+            style={{ 
+              background: '#3b82f6', 
+              color: 'white', 
+              padding: '0.625rem 1.25rem', 
+              borderRadius: '0.5rem', 
+              border: 'none', 
+              fontWeight: '600', 
+              cursor: 'pointer', 
+              marginTop: '1rem' 
+            }}
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <h1 style={titleStyle}>Veículos</h1>
+        
+        {/* Campo de busca */}
+        <input
+          type="text"
+          placeholder="Buscar por placa, marca, modelo ou situação..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={searchInputStyle}
+        />
+
+        {/* Tabs de filtro */}
+        <div style={tabsContainerStyle}>
+          {Object.entries(abaCounts).map(([aba, count]) => (
+            <button
+              key={aba}
+              onClick={() => setFilterAba(aba)}
+              style={getTabStyle(filterAba === aba)}
+            >
+              {aba} ({count})
+            </button>
+          ))}
+        </div>
+
+        {/* Contador */}
+        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+          {filteredVehicles.length} veículos encontrados
+        </p>
+
+        {/* Tabela de veículos */}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Placa</th>
+                <th style={thStyle}>Veículo</th>
+                <th style={thStyle}>Situação</th>
+                <th style={thStyle}>Avaliação</th>
+                <th style={thStyle}>Data Entrada</th>
+                <th style={thStyle}>Valor FIPE</th>
+                <th style={thStyle}>Valor Sugerido</th>
+                <th style={thStyle}>Valor Vendido</th>
+                <th style={thStyle}>Dias</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVehicles.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ ...tdStyle, textAlign: 'center', padding: '2rem' }}>
+                    Nenhum veículo encontrado
+                  </td>
+                </tr>
+              ) : (
+                filteredVehicles.map((vehicle, index) => (
+                  <tr key={index}>
+                    <td style={tdStyle}><strong>{vehicle.placa}</strong></td>
+                    <td style={tdStyle}>{vehicle.marca} {vehicle.modelo}</td>
+                    <td style={tdStyle}>
+                      <span style={badgeStyle(
+                        vehicle.situacao.includes('VENDIDO') ? 'green' : 
+                        vehicle.situacao.includes('PROIBIDO') ? 'red' : 
+                        'blue'
+                      )}>
+                        {vehicle.situacao}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={badgeStyle(vehicle.avaliacao === 'RECUPERÁVEL' ? 'blue' : 'yellow')}>
+                        {vehicle.avaliacao}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      {vehicle.dataEntrada ? new Date(vehicle.dataEntrada).toLocaleDateString('pt-BR') : '-'}
+                    </td>
+                    <td style={tdStyle}>{formatCurrency(vehicle.valorFipe)}</td>
+                    <td style={tdStyle}>{formatCurrency(vehicle.valorSugerido)}</td>
+                    <td style={tdStyle}>
+                      {vehicle.valorVendido > 0 ? formatCurrency(vehicle.valorVendido) : '-'}
+                    </td>
+                    <td style={tdStyle}>{vehicle.dias > 0 ? `${vehicle.dias}d` : '-'}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }

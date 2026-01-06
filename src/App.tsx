@@ -1,144 +1,98 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import DashboardReal from './pages/DashboardReal';
-import VehiclesReal from './pages/VehiclesReal';
+import Dashboard from './pages/Dashboard';
+import Vehicles from './pages/Vehicles';
 
 function Navigation() {
   const location = useLocation();
   
-  const isActive = (path: string) => {
-    return location.pathname === path;
+  const headerStyle: React.CSSProperties = {
+    background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+    color: 'white',
+    padding: '1.5rem 0',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
   };
-
+  
+  const containerStyle: React.CSSProperties = {
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '0 2rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '1rem',
+  };
+  
+  const titleStyle: React.CSSProperties = {
+    fontSize: '1.75rem',
+    fontWeight: '700',
+    margin: 0,
+    letterSpacing: '-0.025em',
+  };
+  
+  const subtitleStyle: React.CSSProperties = {
+    fontSize: '0.875rem',
+    margin: '0.25rem 0 0 0',
+    opacity: 0.95,
+    fontWeight: '400',
+  };
+  
+  const navStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '0.75rem',
+  };
+  
+  const getLinkStyle = (isActive: boolean): React.CSSProperties => ({
+    padding: '0.625rem 1.25rem',
+    borderRadius: '0.5rem',
+    textDecoration: 'none',
+    fontWeight: '600',
+    fontSize: '0.9375rem',
+    background: isActive ? 'white' : 'rgba(255,255,255,0.1)',
+    color: isActive ? '#1e3a8a' : 'white',
+    transition: 'all 0.2s ease',
+    border: 'none',
+    cursor: 'pointer',
+  });
+  
   return (
-    <header className="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Logo e Título */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <svg 
-                width="40" 
-                height="40" 
-                viewBox="0 0 40 40" 
-                fill="none" 
-                className="text-white"
-              >
-                <rect width="40" height="40" rx="8" fill="currentColor" fillOpacity="0.2"/>
-                <path 
-                  d="M20 10L28 14V20C28 25 24 29 20 30C16 29 12 25 12 20V14L20 10Z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-                <path 
-                  d="M16 20L19 23L24 17" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <div>
-                <h1 className="text-xl font-bold">ADMINISTRADORA MUTUAL</h1>
-                <p className="text-sm text-blue-100">Sistema de Gestão de Veículos Salvados</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Navegação */}
-          <nav className="flex items-center gap-2">
-            <Link
-              to="/"
-              className={`
-                px-4 py-2 rounded-lg font-medium text-sm transition-colors
-                ${isActive('/') 
-                  ? 'bg-white text-blue-800' 
-                  : 'text-white hover:bg-blue-700'
-                }
-              `}
-            >
-              <svg 
-                width="16" 
-                height="16" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                className="inline mr-2"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Dashboard
-            </Link>
-            <Link
-              to="/veiculos"
-              className={`
-                px-4 py-2 rounded-lg font-medium text-sm transition-colors
-                ${isActive('/veiculos') 
-                  ? 'bg-white text-blue-800' 
-                  : 'text-white hover:bg-blue-700'
-                }
-              `}
-            >
-              <svg 
-                width="16" 
-                height="16" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                className="inline mr-2"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Veículos
-            </Link>
-          </nav>
-
+    <header style={headerStyle}>
+      <div style={containerStyle}>
+        <div>
+          <h1 style={titleStyle}>ADMINISTRADORA MUTUAL</h1>
+          <p style={subtitleStyle}>Sistema de Gestão de Veículos Salvados</p>
         </div>
+        <nav style={navStyle}>
+          <Link to="/" style={getLinkStyle(location.pathname === '/')}>
+            Dashboard
+          </Link>
+          <Link to="/veiculos" style={getLinkStyle(location.pathname === '/veiculos')}>
+            Veículos
+          </Link>
+        </nav>
       </div>
     </header>
   );
 }
 
-function Footer() {
-  return (
-    <footer className="bg-gray-800 text-gray-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm">
-              © {new Date().getFullYear()} Administradora Mutual. Todos os direitos reservados.
-            </p>
-          </div>
-          <div className="flex items-center gap-6">
-            <a href="#" className="text-sm hover:text-white transition-colors">
-              Suporte
-            </a>
-            <a href="#" className="text-sm hover:text-white transition-colors">
-              Documentação
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 function App() {
+  const appStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    background: '#f3f4f6',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  };
+  
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div style={appStyle}>
         <Navigation />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<DashboardReal />} />
-            <Route path="/veiculos" element={<VehiclesReal />} />
-          </Routes>
-        </main>
-        <Footer />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/veiculos" element={<Vehicles />} />
+        </Routes>
       </div>
     </Router>
   );
