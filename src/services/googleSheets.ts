@@ -7,11 +7,11 @@ const SPREADSHEET_ID = '1M6cez9KsP0KdvkYrcwITd4eMkA10KpYUmPxIvNGCmEI';
 export const SHEET_TABS = {
   RESUMO: 'Resumo',
   NOVOS_NO_PATIO: 'Novos No Pátio',
-  VENDA_AUTORIZADA: '1 Venda Autorizada',
-  VENDIDO_NAO_RECEBIDO: '2 Vendido e Não Recebido',
+  VENDA_AUTORIZADA: 'Venda Autorizada',
+  VENDIDO_NAO_RECEBIDO: 'Vendido e Não Recebido',
   VENDIDO_RECEBIDO: 'Vendido e Recebido',
   OCORRENCIA: 'Ocorrência',
-  PROIBIDA_VENDA: '10 Proibia a Venda',
+  PROIBIDA_VENDA: 'Proibia a Venda',
 };
 
 // Interface simplificada para uso nos componentes
@@ -159,6 +159,7 @@ function isValidVehicleLine(fields: string[]): boolean {
 
 // Função para buscar dados de uma aba específica
 export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
+  console.log(`[GoogleSheets] Buscando dados da aba: "${tabName}"`);
   try {
     // URL para exportar a aba como CSV
     const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
@@ -175,15 +176,23 @@ export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
     const dataLines = lines.slice(2);
     
     const vehicles: VehicleData[] = [];
+    let totalLines = 0;
+    let validLines = 0;
+    let rejectedLines = 0;
     
     for (const line of dataLines) {
+      totalLines++;
       if (!line.trim()) continue;
       
       // Parse CSV
       const fields = parseCSVLine(line);
       
       // Verificar se é uma linha válida de veículo
-      if (!isValidVehicleLine(fields)) continue;
+      if (!isValidVehicleLine(fields)) {
+        rejectedLines++;
+        continue;
+      }
+      validLines++;
       
       const vehicle: VehicleData = {
         dataEntrada: parseDataBR(fields[0] || ''),
@@ -214,6 +223,7 @@ export async function fetchSheetData(tabName: string): Promise<VehicleData[]> {
       vehicles.push(vehicle);
     }
     
+    console.log(`[GoogleSheets] Aba "${tabName}": ${totalLines} linhas processadas, ${validLines} válidas, ${rejectedLines} rejeitadas, ${vehicles.length} veículos retornados`);
     return vehicles;
   } catch (error) {
     console.error(`Erro ao buscar dados da aba "${tabName}":`, error);
