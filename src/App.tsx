@@ -62,7 +62,7 @@ function Navigation() {
     <header style={headerStyle}>
       <div style={containerStyle}>
         <div>
-          <h1 style={titleStyle}>ADMINISTRADORA MUTUAL</h1>
+          <h1 style={titleStyle}>GESTÃO DE SALVADOS</h1>
           <p style={subtitleStyle}>Sistema de Gestão de Veículos Salvados</p>
         </div>
         <nav style={navStyle}>
