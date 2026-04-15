@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
 
@@ -86,15 +88,19 @@ function App() {
   };
   
   return (
-    <Router>
-      <div style={appStyle}>
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/veiculos" element={<Vehicles />} />
-        </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <ProtectedRoute>
+        <Router>
+          <div style={appStyle}>
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/veiculos" element={<Vehicles />} />
+            </Routes>
+          </div>
+        </Router>
+      </ProtectedRoute>
+    </AuthProvider>
   );
 }
 
